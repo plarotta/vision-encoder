@@ -1,0 +1,6 @@
+
+
+images/
+UR5_positions.csv
+*.pyc
+wandb/
