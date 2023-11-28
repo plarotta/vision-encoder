@@ -32,11 +32,15 @@ class VisionNet(nn.Module):
     def forward(self, x1, x2=None, x3=None):
         # pseudo hard coded way of giving multi-input option
         x1 = self.resnet_layers(x1)
+        x1 = torch.flatten(x1, 1)
         if self.num_inputs == 2:
             x2 = self.resnet_layers(x2)
+            x2 = torch.flatten(x2, 1)
             out = self.linear_output(torch.cat([x1,x2],dim=1).view(-1,512*self.num_inputs))
         elif self.num_inputs == 3:
             x2 = self.resnet_layers(x2)
+            x2 = self.resnet_layers(x2)
+            x3 = self.resnet_layers(x3)
             x3 = self.resnet_layers(x3)
             out = self.linear_output(torch.cat([x1,x2,x3],dim=1).view(-1,512*self.num_inputs))
         else:
