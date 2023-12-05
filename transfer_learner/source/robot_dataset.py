@@ -7,7 +7,6 @@ import os
 
 
 class RobotImageDataset(Dataset):
-    #TODO: make multi_input = False functional. Right now it fails 
     def __init__(self, csv_file: str, root_dir: str, multi_input = False):
         """
         Args:
@@ -15,35 +14,49 @@ class RobotImageDataset(Dataset):
             root_dir (string): Directory with all the images.
         """
         self.annotations = pd.read_csv(csv_file)
-        self.annotations = self.annotations[['ImageID','Joint1','Joint2','Joint3','Joint4','Joint5']]
+        self.annotations = self.annotations[['ImageID','Joint3','Joint4','Joint5', 'Joint6']]
         self.root_dir = root_dir
         self.multi_input = multi_input
+        self.file_names = [
+                           "side_view_",
+                           "front_view_",
+                           "top_view_",
+                           "corner1_view_",
+                           "corner2_view_",
+                           "side_depth_view_",
+                           "front_depth_view_",
+                           "top_depth_view_",
+                           "corner1_depth_view_",
+                           "corner2_depth_view_"
+                           ]
 
         #TODO: improve transform so that the final image view is more zoomed in
-        self.transform = v2.Compose(
-            [
-                v2.ToImage(),
-                v2.Resize(size=(224, 224), antialias=True),
-                v2.ToDtype(torch.float32),
-                v2.ToTensor(),
-                v2.Normalize(mean=[0.485, 0.456, 0.406], #default resnet norm
-                             std=[0.229, 0.224, 0.225]),
-                v2.ToTensor()
-            ])
+        if self.multi_input:
+            self.transform = v2.Compose(
+                [
+                    v2.ToDtype(torch.float32),
+                    v2.ToTensor(),
+                    v2.Resize(size=(224, 224), antialias=True),
+                    v2.Normalize(mean=[0.485, 0.456, 0.406], #default resnet norm
+                                std=[0.229, 0.224, 0.225]),
+                    v2.ToTensor()
+                ])
+        else:
+            self.transform = v2.Compose(
+                [
+                    v2.ToDtype(torch.float32),
+                    v2.ToTensor(),
+                    v2.Resize(size=(224, 224), antialias=True),
+                    v2.Grayscale(),
+                    v2.ToTensor()
+                ])
 
-    def process_sample(self, top, side, front):
-        # removing the empty channel
-        top = top[:,:,:3]
-        side = side[:,:,:3]
-        front = front[:,:,:3]
-
-        
-        top_tens = self.transform(top)
-        side_tens = self.transform(side)
-        front_tens = self.transform(front)
-
-        out = [side_tens, top_tens, front_tens] if self.multi_input else torch.cat([side_tens, top_tens, front_tens],dim = 0)
-
+    def process_images(self, images):
+        for im_idx in range(len(images)):
+            if len(images[im_idx].shape) > 2:
+                images[im_idx] = images[im_idx][:,:,:3]
+            images[im_idx] = self.transform(images[im_idx])
+        out = [im for im in images] if self.multi_input else torch.cat([im for im in images],dim = 0)
         return(out)
 
     def __len__(self):
@@ -52,19 +65,8 @@ class RobotImageDataset(Dataset):
     def __getitem__(self, idx):
         if torch.is_tensor(idx):
             idx = idx.tolist()
-
-        side_image_path = os.path.join(self.root_dir, 'side_view_'+ str(idx) + '.png')
-        top_image_path = os.path.join(self.root_dir, 'top_view_'+str(idx) + '.png')
-        front_image_path = os.path.join(self.root_dir, 'front_view_'+str(idx) + '.png')
-
-
-        side_image = io.imread(side_image_path)
-        top_image = io.imread(top_image_path)
-        front_image = io.imread(front_image_path)
-
-        im_data = self.process_sample(top_image, side_image, front_image, )
-
+        images = [io.imread(os.path.join(self.root_dir, f + str(idx) + '.png')) for f in self.file_names]
+        im_data = self.process_images(images)
         joint_values = self.annotations.iloc[idx, 1:].to_numpy(dtype=float)
-
         sample = {'images': im_data, 'joint_values': joint_values}
         return sample
