@@ -4,3 +4,4 @@ images/
 UR5_positions.csv
 *.pyc
 wandb/
+UR5_images_3/
