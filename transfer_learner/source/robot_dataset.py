@@ -7,7 +7,7 @@ import os
 
 
 class RobotImageDataset(Dataset):
-    def __init__(self, csv_file: str, root_dir: str, multi_input = False):
+    def __init__(self, csv_file: str, root_dir: str, multi_input=False, file_names=None):
         """
         Args:
             csv_file (string): Path to the csv file with annotations.
@@ -17,18 +17,21 @@ class RobotImageDataset(Dataset):
         self.annotations = self.annotations[['ImageID','Joint3','Joint4','Joint5', 'Joint6']]
         self.root_dir = root_dir
         self.multi_input = multi_input
-        self.file_names = [
-                           "side_view_",
-                           "front_view_",
-                           "top_view_",
-                           "corner1_view_",
-                           "corner2_view_",
-                           "side_depth_view_",
-                           "front_depth_view_",
-                           "top_depth_view_",
-                           "corner1_depth_view_",
-                           "corner2_depth_view_"
-                           ]
+        if not file_names:
+            self.file_names = [
+                            "side_view_",
+                            "front_view_",
+                            "top_view_",
+                            "corner1_view_",
+                            "corner2_view_",
+                            "side_depth_view_",
+                            "front_depth_view_",
+                            "top_depth_view_",
+                            "corner1_depth_view_",
+                            "corner2_depth_view_"
+                            ]
+        else:
+            self.file_names = file_names
 
         #TODO: improve transform so that the final image view is more zoomed in
         if self.multi_input:

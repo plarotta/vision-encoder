@@ -5,7 +5,7 @@ from torchvision.models.resnet import ResNet18_Weights
 
 
 class RobotNet(nn.Module):
-    def __init__(self, n_hidden_units1, n_hidden_units2, n_inputs=1, freeze_resnet = False):
+    def __init__(self, n_hidden_units1, n_hidden_units2, n_inputs=1, freeze_resnet=False, input_channels=10):
         super().__init__()
         self.num_inputs = n_inputs
         self.in_dim1 = n_hidden_units1
@@ -24,7 +24,7 @@ class RobotNet(nn.Module):
 
 
         self.resnet_layers = nn.Sequential(
-            nn.Conv2d(10, 64, kernel_size=(7, 7), stride=(2, 2), padding=(3, 3), bias=False),
+            nn.Conv2d(input_channels, 64, kernel_size=(7, 7), stride=(2, 2), padding=(3, 3), bias=False),
             *self.base_layers[1:-1])
 
         self.linear_output = nn.Sequential(

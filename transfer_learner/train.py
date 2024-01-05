@@ -9,7 +9,6 @@ import torch.optim as optim
 
 
 
-
 def main():
     run = wandb.init()
 
