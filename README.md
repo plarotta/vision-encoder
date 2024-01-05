@@ -12,3 +12,5 @@ Shrivatsa A. Mudligiri
 Instructor: Peter Belhumeur
 
 Final project for Columbia's Deep Learning for Computer Vision Class
+
+Check out our final report [here](https://github.com/plarotta/vision-encoder/blob/main/DLCV_Final_Project_Report-2.pdf)
